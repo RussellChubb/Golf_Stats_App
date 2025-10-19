@@ -1,3 +1,6 @@
+# Russell Specfiic .ignore speficiations
+application_requirements.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
