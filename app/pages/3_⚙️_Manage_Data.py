@@ -1,7 +1,5 @@
 import streamlit as st
-from utils.data_loader import load_user_data
-import pandas as pd
-import matplotlib.pyplot as plt
+from utils.data_loader import load_user_data, save_data
 from streamlit_option_menu import option_menu
 
 # --Navbar--
@@ -55,28 +53,21 @@ page = option_menu(
     },
 )
 
-st.title("🕳️ Hole Analysis")
+st.title("⚙️ Manage Data")
 
 summary_df, rounds_df, course_df = load_user_data()
-course_list = rounds_df["Course"].unique()
-selected_course = st.selectbox("Select Course", course_list)
 
-merged = rounds_df.merge(course_df, on=["Course", "Hole"], how="left")
-merged["Diff"] = merged["Score"] - merged["Par"]
+tab1, tab2, tab3 = st.tabs(["Course Summary", "Rounds Data", "Course Data"])
 
-course_summary = (
-    merged[merged["Course"] == selected_course]
-    .groupby("Hole")
-    .agg(Avg_Score=("Score", "mean"), Par=("Par", "first"), Avg_Diff=("Diff", "mean"))
-    .reset_index()
-)
+with tab1:
+    edited_summary = st.data_editor(summary_df, num_rows="dynamic", key="summary_edit")
 
-st.dataframe(course_summary)
+with tab2:
+    edited_rounds = st.data_editor(rounds_df, num_rows="dynamic", key="rounds_edit")
 
-fig, ax = plt.subplots()
-ax.bar(course_summary["Hole"], course_summary["Avg_Diff"])
-ax.axhline(0, color="gray", linestyle="--")
-ax.set_title(f"Average Score Difference per Hole — {selected_course}")
-ax.set_xlabel("Hole")
-ax.set_ylabel("Average vs Par")
-st.pyplot(fig)
+with tab3:
+    edited_course = st.data_editor(course_df, num_rows="dynamic", key="course_edit")
+
+if st.button("💾 Save Changes to CSV"):
+    save_data(edited_summary, edited_rounds, edited_course)
+    st.success("Data saved successfully!")
